@@ -2,6 +2,7 @@ package com.casper.testdrivendevelopment;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -23,7 +24,14 @@ import java.util.List;
 
 public class BookListMainActivity extends AppCompatActivity {
 
+    public static final int CONTEXT_MENU_NEW = 1;
+    public static final int CONTEXT_MENU_UPDATE = 2;
+    public static final int CONTEXT_MENU_DELETE = 3;
+    public static final int CONTEXT_MENU_ABOUT = 4;
+    public static final int REQUEST_CODE_NEW_BOOK= 901;
+    public static final int REQUEST_CODE_UPDATE_BOOK = 902;
     private ArrayList<Book> theBooks;
+    private FileDataSource fileDataSource;
     private ListView listViewSuper;
     private BooksArrayAdapter theAdapter;
 
@@ -45,28 +53,68 @@ public class BookListMainActivity extends AppCompatActivity {
         if (v==listViewSuper) {
             int itemPosition=((AdapterView.AdapterContextMenuInfo)menuInfo).position;
             menu.setHeaderTitle(theBooks.get(itemPosition).getTitle());  //前两行在点击时判断位置
-            menu.add(0, 1, 0, "新建");
-            menu.add(0, 2, 0, "删除");
-            menu.add(0, 3, 0, "关于...");
+            menu.add(0, CONTEXT_MENU_NEW, 0, "新建");
+            menu.add(0, CONTEXT_MENU_UPDATE, 0, "修改");
+            menu.add(0, CONTEXT_MENU_DELETE, 0, "删除");
+            menu.add(0, CONTEXT_MENU_ABOUT, 0, "关于...");
         }
         super.onCreateContextMenu(menu, v, menuInfo);
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode,resultCode,data);
+        switch(requestCode) {
+            case REQUEST_CODE_NEW_BOOK:
+                if (resultCode == RESULT_OK) {
+                    int position = data.getIntExtra("edit_position",0);
+                    String name = data.getStringExtra("book_title");
+
+                    theBooks.add(position+1, new Book(name,R.drawable.new_book));
+                    theAdapter.notifyDataSetChanged(); //通知adapter底层数据已改变，修改数据
+                    Toast.makeText(this, "新建成功", Toast.LENGTH_SHORT).show();
+                }
+                break;
+            case REQUEST_CODE_UPDATE_BOOK:
+                if (resultCode == RESULT_OK) {
+                    int position = data.getIntExtra("edit_position", 0);
+                    String title = data.getStringExtra("book_title");
+
+                    Book bookAtPosition=theBooks.get(position);
+                    bookAtPosition.setTitle(title);
+                    theAdapter.notifyDataSetChanged(); //通知adapter底层数据已改变，修改数据
+                    Toast.makeText(this, "修改成功", Toast.LENGTH_SHORT).show();
+                }
+                break;
+        }
+    }   //从EditActivty返回后的操作
+
+    @Override
     public boolean onContextItemSelected(MenuItem item) {
-        switch(item.getItemId()) {
-            case 1: {
-                AdapterView.AdapterContextMenuInfo menuInfo=(AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
+        switch (item.getItemId()) {
+            case CONTEXT_MENU_NEW: {
+                AdapterView.AdapterContextMenuInfo menuInfo = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+                Intent intent = new Intent(BookListMainActivity.this, BookEditActivity.class);
 
-                theBooks.add(menuInfo.position+1, new Book("New Book",R.drawable.new_book));
-                theAdapter.notifyDataSetChanged(); //通知adapter底层数据已改变，修改数据
-                Toast.makeText(this, "你选择了新建", Toast.LENGTH_SHORT).show();
-
+                intent.putExtra("edit_position", menuInfo.position);
+                intent.putExtra("book_title", "输入书籍名称");
+                startActivityForResult(intent, REQUEST_CODE_NEW_BOOK);
                 break;
             }
-            case 2: {
-                AdapterView.AdapterContextMenuInfo menuInfo=(AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
-                final int itemPosition=menuInfo.position;
+            case CONTEXT_MENU_UPDATE: {
+                AdapterView.AdapterContextMenuInfo menuInfo = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+
+                Book book = theBooks.get(menuInfo.position);
+
+                Intent intent = new Intent(BookListMainActivity.this, BookEditActivity.class);
+                intent.putExtra("edit_position", menuInfo.position);
+                intent.putExtra("book_title", book.getTitle());
+                startActivityForResult(intent, REQUEST_CODE_UPDATE_BOOK);
+                break;
+            }
+            case CONTEXT_MENU_DELETE: {
+                AdapterView.AdapterContextMenuInfo menuInfo = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+                final int itemPosition = menuInfo.position;
 
                 new android.app.AlertDialog.Builder(this)
                         .setTitle("询问")
@@ -88,7 +136,7 @@ public class BookListMainActivity extends AppCompatActivity {
                         .create().show();
                 break;
             }
-            case 3:
+            case CONTEXT_MENU_ABOUT:
                 Toast.makeText(this, "版权所有by Wushenhao", Toast.LENGTH_SHORT).show();
                 break;
         }
@@ -96,10 +144,11 @@ public class BookListMainActivity extends AppCompatActivity {
     }
 
     private void InitData(){
-        theBooks = new ArrayList<Book>();
-        theBooks.add(new Book("软件项目管理案例教程（第4版）",R.drawable.book_2));
-        theBooks.add(new Book("创新工程实践",R.drawable.book_no_name));
-        theBooks.add(new Book("信息安全数学基础（第2版）", R.drawable.book_1));
+        fileDataSource=new FileDataSource(this);
+        theBooks=fileDataSource.load();
+        if (theBooks.size()==0) {
+            theBooks.add(new Book("目前没有书",R.drawable.book_no_name));
+        }
     }
 
     protected class BooksArrayAdapter extends ArrayAdapter<Book>
@@ -119,7 +168,7 @@ public class BookListMainActivity extends AppCompatActivity {
             View book = mInflater.inflate(this.resourceid,null);
 
             ImageView img = (ImageView)book.findViewById(R.id.image_view_book_cover);
-            TextView name = (TextView)book.findViewById(R.id.text_view_book_title);
+            TextView name = (TextView)book.findViewById(R.id.text_view_book_name);
 
             Book book_item = this.getItem(position);
             img.setImageResource(book_item.getCoverResourceId());

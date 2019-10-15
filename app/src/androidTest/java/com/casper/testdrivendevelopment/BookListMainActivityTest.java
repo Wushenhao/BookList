@@ -53,7 +53,7 @@ public class BookListMainActivityTest {
 
             //if(iLoop==2)continue;
             ViewInteraction textView = onView(
-                    allOf(withId(R.id.text_view_book_title),
+                    allOf(withId(R.id.text_view_book_name),
                             childAtPosition(
                                     childAtPosition(
                                             withId(R.id.list_view_books),
