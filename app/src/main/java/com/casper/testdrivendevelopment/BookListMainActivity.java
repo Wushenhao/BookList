@@ -70,7 +70,7 @@ public class BookListMainActivity extends AppCompatActivity {
                     int position = data.getIntExtra("edit_position",0);
                     String name = data.getStringExtra("book_title");
 
-                    theBooks.add(position+1, new Book(name,R.drawable.new_book));
+                    theBooks.add(position+1, new Book(name,R.drawable.new_book));   //在当前位置下一位插入
                     theAdapter.notifyDataSetChanged(); //通知adapter底层数据已改变，修改数据
                     Toast.makeText(this, "新建成功", Toast.LENGTH_SHORT).show();
                 }
@@ -80,7 +80,7 @@ public class BookListMainActivity extends AppCompatActivity {
                     int position = data.getIntExtra("edit_position", 0);
                     String title = data.getStringExtra("book_title");
 
-                    Book bookAtPosition=theBooks.get(position);
+                    Book bookAtPosition=theBooks.get(position);   //新建Book对象，复制为当前的位置的ArrayList<book>的Book对象
                     bookAtPosition.setTitle(title);
                     theAdapter.notifyDataSetChanged(); //通知adapter底层数据已改变，修改数据
                     Toast.makeText(this, "修改成功", Toast.LENGTH_SHORT).show();
@@ -143,9 +143,15 @@ public class BookListMainActivity extends AppCompatActivity {
         return super.onContextItemSelected(item);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        fileDataSource.save();
+    } //程序被返回键销毁时，能够保存数据
+
     private void InitData(){
         fileDataSource=new FileDataSource(this);
-        theBooks=fileDataSource.load();
+        theBooks=fileDataSource.load();    //theBooks指向在fileDataSource中新建的对象books
         if (theBooks.size()==0) {
             theBooks.add(new Book("目前没有书",R.drawable.book_no_name));
         }

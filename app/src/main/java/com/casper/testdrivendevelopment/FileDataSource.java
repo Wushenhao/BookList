@@ -30,12 +30,13 @@ public class FileDataSource {
             ObjectOutputStream outputStream = new ObjectOutputStream(
                     context.openFileOutput("Serializable.txt",Context.MODE_PRIVATE)
             );
-            outputStream.writeObject(books);
+            outputStream.writeObject(books);      //建立对象输出流
             outputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
     public ArrayList<Book> load()
     {
         try{
