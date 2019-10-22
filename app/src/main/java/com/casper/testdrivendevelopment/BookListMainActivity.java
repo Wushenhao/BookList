@@ -4,6 +4,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.ContextMenu;
@@ -17,6 +21,9 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.casper.testdrivendevelopment.data.BookFragmentPagerAdapter;
+import com.casper.testdrivendevelopment.data.model.FileDataSource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,25 +39,39 @@ public class BookListMainActivity extends AppCompatActivity {
     public static final int REQUEST_CODE_UPDATE_BOOK = 902;
     private ArrayList<Book> theBooks;
     private FileDataSource fileDataSource;
-    private ListView listViewSuper;
     private BooksArrayAdapter theAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_book_list_main);
+        setContentView(R.layout.activity_book_list_main);          //显示activity_book_list_main内容
 
         InitData();
 
-        listViewSuper = (ListView)this.findViewById(R.id.list_view_books);
-        theAdapter = new BooksArrayAdapter(this, R.layout.book_list,theBooks);
-        listViewSuper.setAdapter(theAdapter);
-        this.registerForContextMenu(listViewSuper); //为控件注册场景菜单
+        theAdapter=new BooksArrayAdapter(this,R.layout.book_list,theBooks);        //负责ListView中每个项的适配器
+
+        BookFragmentPagerAdapter myPageAdapter = new BookFragmentPagerAdapter(getSupportFragmentManager());   //新建自定义的BookFragmentPagerAdapter类对象myPageAdapter
+
+        ArrayList<Fragment> datas = new ArrayList<Fragment>();
+        datas.add(new BookListFragment(theAdapter));
+        datas.add(new WebFragment(theAdapter));    //创建两个fragment对应的视图
+        myPageAdapter.setData(datas);          //初始化datas
+
+        ArrayList<String> titles = new ArrayList<String>();
+        titles.add("商品");
+        titles.add("信息");
+        myPageAdapter.setTitles(titles);         //初始化标签
+
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.tablayout);
+        ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);        // 将适配器设置进ViewPager
+        viewPager.setAdapter(myPageAdapter);        // 将ViewPager与TabLayout相关联
+        tabLayout.setupWithViewPager(viewPager);     //将tablayout绑定ViewPager
+
     }
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        if (v==listViewSuper) {
+        if (v==this.findViewById(R.id.list_view_books)) {
             int itemPosition=((AdapterView.AdapterContextMenuInfo)menuInfo).position;
             menu.setHeaderTitle(theBooks.get(itemPosition).getTitle());  //前两行在点击时判断位置
             menu.add(0, CONTEXT_MENU_NEW, 0, "新建");
@@ -155,7 +176,7 @@ public class BookListMainActivity extends AppCompatActivity {
         if (theBooks.size()==0) {
             theBooks.add(new Book("目前没有书",R.drawable.book_no_name));
         }
-    }
+    }     //初始化ArrayList<books>型变量theBooks
 
     protected class BooksArrayAdapter extends ArrayAdapter<Book>
     {
