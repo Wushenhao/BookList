@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -18,11 +17,10 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.casper.testdrivendevelopment.data.BookFragmentPagerAdapter;
+import com.casper.testdrivendevelopment.data.model.BookFragmentPagerAdapter;
 import com.casper.testdrivendevelopment.data.model.FileDataSource;
 
 import java.util.ArrayList;
@@ -54,17 +52,19 @@ public class BookListMainActivity extends AppCompatActivity {
 
         ArrayList<Fragment> datas = new ArrayList<Fragment>();
         datas.add(new BookListFragment(theAdapter));
-        datas.add(new WebFragment(theAdapter));    //创建两个fragment对应的视图
+        datas.add(new WebFragment());    //创建两个fragment对应的视图
+        datas.add(new MapFragment());
         myPageAdapter.setData(datas);          //初始化datas
 
         ArrayList<String> titles = new ArrayList<String>();
-        titles.add("商品");
-        titles.add("信息");
+        titles.add("书籍");
+        titles.add("新闻");
+        titles.add("卖家");
         myPageAdapter.setTitles(titles);         //初始化标签
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tablayout);
         ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);        // 将适配器设置进ViewPager
-        viewPager.setAdapter(myPageAdapter);        // 将ViewPager与TabLayout相关联
+        viewPager.setAdapter(myPageAdapter);        // 将ViewPager与适配器相关联
         tabLayout.setupWithViewPager(viewPager);     //将tablayout绑定ViewPager
 
     }
