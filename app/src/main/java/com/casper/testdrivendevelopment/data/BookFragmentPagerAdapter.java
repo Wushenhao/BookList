@@ -1,4 +1,4 @@
-package com.casper.testdrivendevelopment.data.model;
+package com.casper.testdrivendevelopment.data;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;

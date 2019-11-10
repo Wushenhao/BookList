@@ -20,8 +20,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.casper.testdrivendevelopment.data.model.BookFragmentPagerAdapter;
-import com.casper.testdrivendevelopment.data.model.FileDataSource;
+import com.casper.testdrivendevelopment.data.model.Book;
+import com.casper.testdrivendevelopment.data.BookFragmentPagerAdapter;
+import com.casper.testdrivendevelopment.data.FileDataSource;
 
 import java.util.ArrayList;
 import java.util.List;
